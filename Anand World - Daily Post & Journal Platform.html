@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anand World - Daily Journal & Post Hub</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Insights -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Confetti for streak milestones -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e0ebff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar for modern feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.7);
+        }
+
+        /* Glassmorphism utility */
+        .glass {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .animated-gradient {
+            background: linear-gradient(-45deg, #4f46e5, #7c3aed, #2563eb, #0d9488);
+            background-size: 400% 400%;
+            animation: gradient 12s ease infinite;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 font-sans min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Header Navbar -->
+    <header class="sticky top-0 z-30 glass border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.switchView('timeline')">
+                <div class="w-10 h-10 rounded-xl animated-gradient flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 font-heading text-xl font-bold">
+                    A
+                </div>
+                <div>
+                    <h1 class="font-heading font-extrabold text-xl tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
+                        Anand World
+                    </h1>
+                    <p class="text-[10px] font-medium text-slate-500 dark:text-slate-400 tracking-wider uppercase -mt-1">Personal Daily Feed</p>
+                </div>
+            </div>
+
+            <!-- View Tabs -->
+            <nav class="hidden md:flex items-center space-x-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+                <button onclick="app.switchView('timeline')" id="nav-timeline" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm">
+                    <i data-lucide="layout-list" class="w-4 h-4"></i>
+                    <span>Timeline</span>
+                </button>
+                <button onclick="app.switchView('calendar')" id="nav-calendar" class="px-3.5 py-1.5 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center space-x-2">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span>Calendar</span>
+                </button>
+                <button onclick="app.switchView('insights')" id="nav-insights" class="px-3.5 py-1.5 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center space-x-2">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                    <span>Insights</span>
+                </button>
+            </nav>
+
+            <!-- Actions Header -->
+            <div class="flex items-center space-x-3">
+                <!-- Streak Badge -->
+                <div class="hidden sm:flex items-center space-x-1.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-xl text-xs font-semibold" title="Current Daily Streak">
+                    <i data-lucide="flame" class="w-4 h-4 fill-amber-500 text-amber-500 animate-pulse"></i>
+                    <span id="streak-counter">0 Days Streak</span>
+                </div>
+
+                <!-- Theme Toggle Button -->
+                <button onclick="app.toggleTheme()" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 transition-colors" title="Toggle Dark/Light Mode">
+                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                </button>
+
+                <!-- New Post Button -->
+                <button onclick="app.openPostModal()" class="animated-gradient hover:opacity-95 text-white font-medium px-4 py-2 rounded-xl shadow-md shadow-indigo-500/25 flex items-center space-x-2 text-sm transition-transform active:scale-95">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">New Post</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 z-30 glass border-t border-slate-200 dark:border-slate-800 py-2 px-4 flex justify-around items-center">
+        <button onclick="app.switchView('timeline')" id="mobile-nav-timeline" class="flex flex-col items-center text-indigo-600 dark:text-indigo-400">
+            <i data-lucide="layout-list" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium mt-1">Timeline</span>
+        </button>
+        <button onclick="app.switchView('calendar')" id="mobile-nav-calendar" class="flex flex-col items-center text-slate-500 dark:text-slate-400">
+            <i data-lucide="calendar" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium mt-1">Calendar</span>
+        </button>
+        <button onclick="app.openPostModal()" class="flex flex-col items-center text-white bg-indigo-600 p-2.5 rounded-full shadow-lg -mt-5">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+        </button>
+        <button onclick="app.switchView('insights')" id="mobile-nav-insights" class="flex flex-col items-center text-slate-500 dark:text-slate-400">
+            <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium mt-1">Insights</span>
+        </button>
+        <button onclick="app.toggleExportModal()" class="flex flex-col items-center text-slate-500 dark:text-slate-400">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium mt-1">Options</span>
+        </button>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full mb-16 md:mb-0">
+        <!-- Hero Welcome Header -->
+        <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 text-white p-6 sm:p-8 mb-8 shadow-xl">
+            <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute right-20 -top-10 w-40 h-40 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="relative z-10 sm:flex items-center justify-between gap-6">
+                <div class="mb-4 sm:mb-0">
+                    <div class="flex items-center space-x-2 text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+                        <span id="current-date-badge">Today's Hub</span>
+                    </div>
+                    <h2 class="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight">
+                        Welcome back, Anand! 👋
+                    </h2>
+                    <p class="text-indigo-200 text-sm mt-1 max-w-xl" id="quote-container">
+                        "Documenting your life creates a treasure chest for your future self."
+                    </p>
+                </div>
+
+                <!-- Quick Action Card -->
+                <div class="flex items-center space-x-3 bg-white/10 backdrop-blur-md border border-white/10 p-3 rounded-2xl shrink-0">
+                    <div class="text-center px-3 border-r border-white/10">
+                        <p class="text-xs text-indigo-200 font-medium">Total Posts</p>
+                        <p class="text-xl font-bold font-heading" id="total-posts-count">0</p>
+                    </div>
+                    <div class="text-center px-3">
+                        <p class="text-xs text-indigo-200 font-medium">Favorites</p>
+                        <p class="text-xl font-bold font-heading text-amber-300" id="fav-posts-count">0</p>
+                    </div>
+                    <button onclick="app.openPostModal()" class="ml-2 bg-white text-indigo-900 hover:bg-indigo-50 p-2.5 rounded-xl font-semibold text-xs shadow-md transition-all active:scale-95">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 1: TIMELINE VIEW -->
+        <section id="view-timeline" class="space-y-6">
+            <!-- Search & Filters Toolbar -->
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+                <!-- Search Box -->
+                <div class="relative w-full md:w-80">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-input" oninput="app.handleSearch()" placeholder="Search daily posts, tags, text..." class="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm border-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none transition-all">
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <!-- Mood Filter -->
+                    <select id="mood-filter" onchange="app.handleFilter()" class="bg-slate-100 dark:bg-slate-800 text-xs font-medium px-3 py-2 rounded-xl border-none focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-300 outline-none">
+                        <option value="ALL">All Moods</option>
+                        <option value="😃 Energetic">😃 Energetic</option>
+                        <option value="😊 Peaceful">😊 Peaceful</option>
+                        <option value="🚀 Productive">🚀 Productive</option>
+                        <option value="💡 Inspired">💡 Inspired</option>
+                        <option value="😴 Tired">😴 Tired</option>
+                        <option value="🧘 Reflective">🧘 Reflective</option>
+                    </select>
+
+                    <!-- Favorites Only Button -->
+                    <button id="fav-filter-btn" onclick="app.toggleFavFilter()" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-medium flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <i data-lucide="star" class="w-3.5 h-3.5 text-amber-500"></i>
+                        <span>Favorites</span>
+                    </button>
+
+                    <!-- Clear Filters -->
+                    <button onclick="app.resetFilters()" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline px-2 font-medium">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tags Quick Bar -->
+            <div id="tags-bar" class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+                <!-- Tags populated via JS -->
+            </div>
+
+            <!-- Posts List Feed -->
+            <div id="posts-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Post Cards will be dynamically injected here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 p-8">
+                <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-indigo-500">
+                    <i data-lucide="file-plus" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-heading font-bold text-lg text-slate-800 dark:text-slate-200">No Posts Found</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto">Start recording your day in Anand World! Click the button below to upload your first post.</p>
+                <button onclick="app.openPostModal()" class="mt-5 animated-gradient text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow-md inline-flex items-center space-x-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Create Daily Entry</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW 2: CALENDAR VIEW -->
+        <section id="view-calendar" class="hidden space-y-6">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+                <!-- Calendar Controls Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-heading font-extrabold text-xl flex items-center space-x-2">
+                        <i data-lucide="calendar-days" class="w-5 h-5 text-indigo-500"></i>
+                        <span id="calendar-month-year">Month Year</span>
+                    </h3>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="app.changeMonth(-1)" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="app.goToTodayMonth()" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                            Today
+                        </button>
+                        <button onclick="app.changeMonth(1)" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Weekday Labels -->
+                <div class="grid grid-cols-7 gap-1 text-center font-semibold text-xs text-slate-400 mb-2">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+
+                <!-- Calendar Days Grid -->
+                <div id="calendar-days-grid" class="grid grid-cols-7 gap-2">
+                    <!-- Dynamic Days -->
+                </div>
+            </div>
+
+            <!-- Posts on Selected Day Preview -->
+            <div id="calendar-selected-day-section" class="hidden space-y-4">
+                <h4 class="font-heading font-bold text-lg flex items-center justify-between">
+                    <span>Posts on <span id="selected-day-date-title" class="text-indigo-600 dark:text-indigo-400"></span></span>
+                    <button onclick="app.openPostModalWithDate()" class="text-xs bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-lg font-medium">
+                        + Add post on this date
+                    </button>
+                </h4>
+                <div id="calendar-day-posts" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Filtered day posts dynamic -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: INSIGHTS & ANALYTICS VIEW -->
+        <section id="view-insights" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Chart 1: Mood Distribution -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm lg:col-span-1">
+                    <h3 class="font-heading font-bold text-base mb-4 flex items-center space-x-2">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-purple-500"></i>
+                        <span>Mood Distribution</span>
+                    </h3>
+                    <div class="relative h-64 flex items-center justify-center">
+                        <canvas id="moodChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Posts Velocity / Habit -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm lg:col-span-2">
+                    <h3 class="font-heading font-bold text-base mb-4 flex items-center space-x-2">
+                        <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
+                        <span>Activity Trend (Last 7 Days)</span>
+                    </h3>
+                    <div class="relative h-64">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journaling Stats Summary -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+                    <p class="text-xs text-slate-400 font-medium">Total Words Written</p>
+                    <p class="text-2xl font-bold font-heading text-indigo-600 dark:text-indigo-400 mt-1" id="stat-total-words">0</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+                    <p class="text-xs text-slate-400 font-medium">Avg Words / Post</p>
+                    <p class="text-2xl font-bold font-heading text-purple-600 dark:text-purple-400 mt-1" id="stat-avg-words">0</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+                    <p class="text-xs text-slate-400 font-medium">Most Used Mood</p>
+                    <p class="text-2xl font-bold font-heading text-emerald-600 dark:text-emerald-400 mt-1" id="stat-top-mood">None</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+                    <p class="text-xs text-slate-400 font-medium">Photo Memories</p>
+                    <p class="text-2xl font-bold font-heading text-pink-600 dark:text-pink-400 mt-1" id="stat-total-photos">0</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- POST MODAL (CREATE / EDIT) -->
+    <div id="post-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+                <h3 class="font-heading font-extrabold text-lg flex items-center space-x-2" id="modal-heading">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-indigo-500"></i>
+                    <span>New Post for Anand World</span>
+                </h3>
+                <button onclick="app.closePostModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <form id="post-form" onsubmit="app.savePost(event)" class="p-6 space-y-4 overflow-y-auto flex-grow">
+                <input type="hidden" id="post-id">
+
+                <!-- Title Input -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Post Title</label>
+                    <input type="text" id="post-title" required placeholder="What happened today in your world?" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <!-- Date & Mood Selectors -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Date</label>
+                        <input type="date" id="post-date" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Current Mood</label>
+                        <select id="post-mood" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="😃 Energetic">😃 Energetic</option>
+                            <option value="😊 Peaceful">😊 Peaceful</option>
+                            <option value="🚀 Productive">🚀 Productive</option>
+                            <option value="💡 Inspired">💡 Inspired</option>
+                            <option value="😴 Tired">😴 Tired</option>
+                            <option value="🧘 Reflective">🧘 Reflective</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Image URL Input or Quick Unsplash Picker -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Image Attachment (URL)</label>
+                        <button type="button" onclick="app.setSampleImage()" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Insert Sample Image</button>
+                    </div>
+                    <input type="url" id="post-image" placeholder="https://images.unsplash.com/photo-..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <!-- Tags Input -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Tags (Comma separated)</label>
+                    <input type="text" id="post-tags" placeholder="e.g. Life, Coding, Fitness, Travel" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <!-- Content Body -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Daily Entry Content</label>
+                    <textarea id="post-content" rows="6" required placeholder="Write your thoughts, memories, lessons learned, or daily updates here..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Favorite Toggle Checkbox -->
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="post-fav" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700">
+                    <label for="post-fav" class="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center space-x-1">
+                        <span>Mark as Highlight / Favorite</span>
+                        <i data-lucide="star" class="w-3.5 h-3.5 text-amber-500 fill-amber-500"></i>
+                    </label>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-3">
+                    <button type="button" onclick="app.closePostModal()" class="px-5 py-2.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        Cancel
+                    </button>
+                    <button type="submit" class="animated-gradient text-white px-6 py-2.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition-transform">
+                        Publish Post
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW POST DETAIL MODAL -->
+    <div id="detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+            <div id="detail-modal-body" class="p-6 overflow-y-auto space-y-4">
+                <!-- Dynamically filled by JS -->
+            </div>
+            <div class="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <button id="detail-delete-btn" class="text-xs text-rose-500 hover:text-rose-600 font-semibold flex items-center space-x-1">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <span>Delete Post</span>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <button id="detail-edit-btn" class="px-4 py-2 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-semibold flex items-center space-x-1">
+                        <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                        <span>Edit Post</span>
+                    </button>
+                    <button onclick="app.closeDetailModal()" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPORT & OPTIONS MODAL -->
+    <div id="export-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+            <div class="flex items-center justify-between">
+                <h3 class="font-heading font-extrabold text-lg flex items-center space-x-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-indigo-500"></i>
+                    <span>Anand World Options</span>
+                </h3>
+                <button onclick="app.toggleExportModal()" class="p-1 text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="app.exportData('json')" class="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors text-left">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold">Export Backup (JSON)</p>
+                            <p class="text-[11px] text-slate-400">Save all posts locally on your device</p>
+                        </div>
+                    </div>
+                </button>
+
+                <button onclick="app.exportData('md')" class="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors text-left">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-xl">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold">Export Markdown Journal</p>
+                            <p class="text-[11px] text-slate-400">Readable text document of all posts</p>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Import Data File Input -->
+                <label class="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                            <i data-lucide="upload" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold">Restore Backup (JSON)</p>
+                            <p class="text-[11px] text-slate-400">Import saved entries file</p>
+                        </div>
+                    </div>
+                    <input type="file" accept=".json" onchange="app.importData(event)" class="hidden">
+                </label>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
+                <p class="text-[11px] text-slate-400">Anand World Daily Post Hub &bull; Designed for daily personal logging</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification Toast -->
+    <div id="toast" class="fixed bottom-20 md:bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-3 text-xs border border-slate-800">
+        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400" id="toast-icon"></i>
+        <span id="toast-message">Notification message</span>
+    </div>
+
+    <script>
+        const APP_STORAGE_KEY = "anand_world_posts_v1";
+
+        // Inspirational daily quotes for Anand
+        const QUOTES = [
+            "\"Documenting your life creates a treasure chest for your future self.\"",
+            "\"Small daily improvements over time lead to stunning results.\"",
+            "\"Your daily journal is the mirror of your personal growth.\"",
+            "\"Write it down. Written goals have a way of becoming reality.\"",
+            "\"Every day brings a new fresh page in Anand World!\""
+        ];
+
+        // Default initial welcome sample posts for Anand
+        const SAMPLE_POSTS = [
+            {
+                id: "sample-1",
+                title: "Welcome to Anand World! 🚀",
+                content: "Today marks the launch of my new personal daily post platform! Here I can upload my thoughts, document daily accomplishments, track my moods, and build a consistent journaling habit.",
+                date: new Date().toISOString().split('T')[0],
+                mood: "🚀 Productive",
+                tags: ["Welcome", "Life", "Milestone"],
+                isFav: true,
+                image: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: "sample-2",
+                title: "Evening Walk & Reflection 🌿",
+                content: "Took a peaceful evening walk today. Weather was lovely. Finished my planned tasks for the afternoon and feeling inspired for tomorrow.",
+                date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+                mood: "😊 Peaceful",
+                tags: ["Outdoors", "Fitness", "Mindfulness"],
+                isFav: false,
+                image: "https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?auto=format&fit=crop&w=800&q=80",
+                createdAt: new Date(Date.now() - 86400000).toISOString()
+            }
+        ];
+
+        class AnandWorldApp {
+            constructor() {
+                this.posts = [];
+                this.currentView = 'timeline';
+                this.selectedTag = null;
+                this.moodFilter = 'ALL';
+                this.favFilterOnly = false;
+                this.searchQuery = '';
+                this.currentCalendarDate = new Date();
+                this.selectedCalendarDay = null;
+                
+                this.moodChartInstance = null;
+                this.activityChartInstance = null;
+
+                this.init();
+            }
+
+            init() {
+                // Load local posts
+                this.loadPosts();
+                
+                // Initialize theme
+                this.initTheme();
+
+                // Display daily quote
+                document.getElementById('quote-container').innerText = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+                
+                // Date badge
+                const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+                document.getElementById('current-date-badge').innerText = new Date().toLocaleDateString('en-US', options);
+
+                // Set default post modal date to today
+                document.getElementById('post-date').value = new Date().toISOString().split('T')[0];
+
+                // Initial render
+                this.render();
+                
+                // Initialize Lucide icons
+                lucide.createIcons();
+            }
+
+            loadPosts() {
+                const stored = localStorage.getItem(APP_STORAGE_KEY);
+                if (stored) {
+                    try {
+                        this.posts = JSON.parse(stored);
+                    } catch (e) {
+                        this.posts = SAMPLE_POSTS;
+                    }
+                } else {
+                    this.posts = SAMPLE_POSTS;
+                    this.savePostsToStorage();
+                }
+            }
+
+            savePostsToStorage() {
+                localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(this.posts));
+            }
+
+            initTheme() {
+                if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+
+            toggleTheme() {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+
+            switchView(viewName) {
+                this.currentView = viewName;
+
+                // Update UI Navigation Buttons
+                ['timeline', 'calendar', 'insights'].forEach(v => {
+                    const navEl = document.getElementById(`nav-${v}`);
+                    const mobileNavEl = document.getElementById(`mobile-nav-${v}`);
+                    const viewSec = document.getElementById(`view-${v}`);
+
+                    if (v === viewName) {
+                        if (navEl) {
+                            navEl.className = "px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm";
+                        }
+                        if (mobileNavEl) {
+                            mobileNavEl.className = "flex flex-col items-center text-indigo-600 dark:text-indigo-400";
+                        }
+                        if (viewSec) viewSec.classList.remove('hidden');
+                    } else {
+                        if (navEl) {
+                            navEl.className = "px-3.5 py-1.5 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center space-x-2";
+                        }
+                        if (mobileNavEl) {
+                            mobileNavEl.className = "flex flex-col items-center text-slate-500 dark:text-slate-400";
+                        }
+                        if (viewSec) viewSec.classList.add('hidden');
+                    }
+                });
+
+                if (viewName === 'calendar') {
+                    this.renderCalendar();
+                } else if (viewName === 'insights') {
+                    this.renderInsights();
+                }
+            }
+
+            openPostModal(editPost = null) {
+                const form = document.getElementById('post-form');
+                form.reset();
+
+                if (editPost) {
+                    document.getElementById('modal-heading').innerText = "Edit Post";
+                    document.getElementById('post-id').value = editPost.id;
+                    document.getElementById('post-title').value = editPost.title;
+                    document.getElementById('post-date').value = editPost.date;
+                    document.getElementById('post-mood').value = editPost.mood;
+                    document.getElementById('post-image').value = editPost.image || '';
+                    document.getElementById('post-tags').value = (editPost.tags || []).join(', ');
+                    document.getElementById('post-content').value = editPost.content;
+                    document.getElementById('post-fav').checked = editPost.isFav || false;
+                } else {
+                    document.getElementById('modal-heading').innerText = "New Post for Anand World";
+                    document.getElementById('post-id').value = '';
+                    document.getElementById('post-date').value = new Date().toISOString().split('T')[0];
+                }
+
+                document.getElementById('post-modal').classList.remove('hidden');
+            }
+
+            openPostModalWithDate() {
+                if (!this.selectedCalendarDay) return;
+                this.openPostModal();
+                document.getElementById('post-date').value = this.selectedCalendarDay;
+            }
+
+            closePostModal() {
+                document.getElementById('post-modal').classList.add('hidden');
+            }
+
+            setSampleImage() {
+                const samples = [
+                    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80"
+                ];
+                const random = samples[Math.floor(Math.random() * samples.length)];
+                document.getElementById('post-image').value = random;
+            }
+
+            savePost(e) {
+                e.preventDefault();
+
+                const id = document.getElementById('post-id').value || 'post-' + Date.now();
+                const title = document.getElementById('post-title').value.trim();
+                const date = document.getElementById('post-date').value;
+                const mood = document.getElementById('post-mood').value;
+                const image = document.getElementById('post-image').value.trim();
+                const tagsRaw = document.getElementById('post-tags').value;
+                const content = document.getElementById('post-content').value.trim();
+                const isFav = document.getElementById('post-fav').checked;
+
+                const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+                const existingIndex = this.posts.findIndex(p => p.id === id);
+
+                const postData = {
+                    id,
+                    title,
+                    date,
+                    mood,
+                    image,
+                    tags,
+                    content,
+                    isFav,
+                    createdAt: existingIndex >= 0 ? this.posts[existingIndex].createdAt : new Date().toISOString()
+                };
+
+                if (existingIndex >= 0) {
+                    this.posts[existingIndex] = postData;
+                    this.showToast('Post updated successfully!');
+                } else {
+                    this.posts.unshift(postData);
+                    this.showToast('New entry uploaded to Anand World!');
+                    
+                    // Trigger celebratory confetti for posting
+                    try {
+                        confetti({
+                            particleCount: 50,
+                            spread: 60,
+                            origin: { y: 0.8 }
+                        });
+                    } catch(err) {}
+                }
+
+                this.savePostsToStorage();
+                this.closePostModal();
+                this.render();
+            }
+
+            deletePost(postId) {
+                // Delete confirmation modal simulated nicely
+                this.posts = this.posts.filter(p => p.id !== postId);
+                this.savePostsToStorage();
+                this.closeDetailModal();
+                this.showToast('Post deleted.');
+                this.render();
+            }
+
+            toggleFav(postId, event) {
+                if (event) event.stopPropagation();
+                const post = this.posts.find(p => p.id === postId);
+                if (post) {
+                    post.isFav = !post.isFav;
+                    this.savePostsToStorage();
+                    this.render();
+                    this.showToast(post.isFav ? 'Added to Favorites!' : 'Removed from Favorites.');
+                }
+            }
+
+            handleSearch() {
+                this.searchQuery = document.getElementById('search-input').value.toLowerCase();
+                this.renderPosts();
+            }
+
+            handleFilter() {
+                this.moodFilter = document.getElementById('mood-filter').value;
+                this.renderPosts();
+            }
+
+            toggleFavFilter() {
+                this.favFilterOnly = !this.favFilterOnly;
+                const btn = document.getElementById('fav-filter-btn');
+                if (this.favFilterOnly) {
+                    btn.className = "px-3 py-2 rounded-xl border border-amber-500 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-xs font-semibold flex items-center space-x-1.5 shadow-sm";
+                } else {
+                    btn.className = "px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-medium flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors";
+                }
+                this.renderPosts();
+            }
+
+            resetFilters() {
+                this.searchQuery = '';
+                this.moodFilter = 'ALL';
+                this.favFilterOnly = false;
+                this.selectedTag = null;
+
+                document.getElementById('search-input').value = '';
+                document.getElementById('mood-filter').value = 'ALL';
+                const btn = document.getElementById('fav-filter-btn');
+                btn.className = "px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-medium flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors";
+
+                this.render();
+            }
+
+            filterPosts() {
+                return this.posts.filter(p => {
+                    // Search
+                    const matchesSearch = !this.searchQuery || 
+                        p.title.toLowerCase().includes(this.searchQuery) ||
+                        p.content.toLowerCase().includes(this.searchQuery) ||
+                        (p.tags && p.tags.some(t => t.toLowerCase().includes(this.searchQuery)));
+
+                    // Mood
+                    const matchesMood = this.moodFilter === 'ALL' || p.mood === this.moodFilter;
+
+                    // Favorite
+                    const matchesFav = !this.favFilterOnly || p.isFav;
+
+                    // Tag
+                    const matchesTag = !this.selectedTag || (p.tags && p.tags.includes(this.selectedTag));
+
+                    return matchesSearch && matchesMood && matchesFav && matchesTag;
+                }).sort((a, b) => new Date(b.date) - new Date(a.date));
+            }
+
+            render() {
+                this.renderHeaderStats();
+                this.renderTagsBar();
+                this.renderPosts();
+                if (this.currentView === 'calendar') this.renderCalendar();
+                if (this.currentView === 'insights') this.renderInsights();
+            }
+
+            renderHeaderStats() {
+                document.getElementById('total-posts-count').innerText = this.posts.length;
+                document.getElementById('fav-posts-count').innerText = this.posts.filter(p => p.isFav).length;
+
+                // Calculate Streak
+                const streak = this.calculateStreak();
+                document.getElementById('streak-counter').innerText = `${streak} Day${streak !== 1 ? 's' : ''} Streak`;
+            }
+
+            calculateStreak() {
+                if (this.posts.length === 0) return 0;
+                
+                const uniqueDates = [...new Set(this.posts.map(p => p.date))].sort().reverse();
+                if (uniqueDates.length === 0) return 0;
+
+                const todayStr = new Date().toISOString().split('T')[0];
+                const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+                // Check if posted today or yesterday to maintain active streak
+                if (!uniqueDates.includes(todayStr) && !uniqueDates.includes(yesterday)) {
+                    return 0;
+                }
+
+                let streak = 0;
+                let checkDate = new Date();
+                
+                if (!uniqueDates.includes(todayStr)) {
+                    checkDate.setDate(checkDate.getDate() - 1);
+                }
+
+                while (true) {
+                    const dateStr = checkDate.toISOString().split('T')[0];
+                    if (uniqueDates.includes(dateStr)) {
+                        streak++;
+                        checkDate.setDate(checkDate.getDate() - 1);
+                    } else {
+                        break;
+                    }
+                }
+
+                return streak;
+            }
+
+            renderTagsBar() {
+                const tagMap = {};
+                this.posts.forEach(p => {
+                    (p.tags || []).forEach(t => {
+                        tagMap[t] = (tagMap[t] || 0) + 1;
+                    });
+                });
+
+                const container = document.getElementById('tags-bar');
+                if (Object.keys(tagMap).length === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                let html = `<span class="text-slate-400 font-medium mr-1">Tags:</span>`;
+                html += `<button onclick="app.filterByTag(null)" class="px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${!this.selectedTag ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}">All</button>`;
+
+                Object.keys(tagMap).forEach(tag => {
+                    const active = this.selectedTag === tag;
+                    html += `<button onclick="app.filterByTag('${tag}')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${active ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}">#${tag} <span class="opacity-60 text-[10px]">(${tagMap[tag]})</span></button>`;
+                });
+
+                container.innerHTML = html;
+            }
+
+            filterByTag(tag) {
+                this.selectedTag = tag;
+                this.render();
+            }
+
+            renderPosts() {
+                const container = document.getElementById('posts-container');
+                const emptyState = document.getElementById('empty-state');
+                const filtered = this.filterPosts();
+
+                if (filtered.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+
+                container.innerHTML = filtered.map(post => {
+                    const formattedDate = new Date(post.date + 'T00:00:00').toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric', year: 'numeric'
+                    });
+
+                    return `
+                    <div onclick="app.openDetailModal('${post.id}')" class="group bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-1">
+                        ${post.image ? `
+                        <div class="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                            <img src="${post.image}" alt="${post.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'">
+                            <div class="absolute top-3 right-3 bg-slate-950/50 backdrop-blur-md px-2.5 py-1 rounded-full text-xs text-white font-medium">
+                                ${post.mood}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+                                    <span class="flex items-center space-x-1 font-medium">
+                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-500"></i>
+                                        <span>${formattedDate}</span>
+                                    </span>
+                                    ${!post.image ? `<span class="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full font-medium text-slate-600 dark:text-slate-300">${post.mood}</span>` : ''}
+                                </div>
+
+                                <h3 class="font-heading font-extrabold text-lg text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-1">
+                                    ${post.title}
+                                </h3>
+
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-3 leading-relaxed">
+                                    ${post.content}
+                                </p>
+                            </div>
+
+                            <div class="pt-3 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                                <div class="flex flex-wrap gap-1">
+                                    ${(post.tags || []).map(t => `<span class="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">#${t}</span>`).join('')}
+                                </div>
+
+                                <button onclick="app.toggleFav('${post.id}', event)" class="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 transition-colors">
+                                    <i data-lucide="star" class="w-4 h-4 ${post.isFav ? 'text-amber-500 fill-amber-500' : ''}"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+
+                lucide.createIcons();
+            }
+
+            openDetailModal(postId) {
+                const post = this.posts.find(p => p.id === postId);
+                if (!post) return;
+
+                const formattedDate = new Date(post.date + 'T00:00:00').toLocaleDateString('en-US', {
+                    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+                });
+
+                const modalBody = document.getElementById('detail-modal-body');
+                modalBody.innerHTML = `
+                    <div class="space-y-4">
+                        ${post.image ? `<div class="rounded-2xl overflow-hidden max-h-72"><img src="${post.image}" class="w-full h-full object-cover"></div>` : ''}
+                        
+                        <div class="flex items-center justify-between text-xs text-slate-400">
+                            <span class="flex items-center space-x-1 font-semibold text-indigo-600 dark:text-indigo-400">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                <span>${formattedDate}</span>
+                            </span>
+                            <span class="bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-semibold px-3 py-1 rounded-full">
+                                ${post.mood}
+                            </span>
+                        </div>
+
+                        <h2 class="font-heading font-extrabold text-2xl text-slate-900 dark:text-white">
+                            ${post.title}
+                        </h2>
+
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            ${(post.tags || []).map(t => `<span class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2.5 py-1 rounded-lg">#${t}</span>`).join('')}
+                        </div>
+
+                        <div class="text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-line border-t border-slate-100 dark:border-slate-800 pt-4">
+                            ${post.content}
+                        </div>
+                    </div>
+                `;
+
+                // Set up buttons inside detail modal
+                document.getElementById('detail-delete-btn').onclick = () => this.deletePost(post.id);
+                document.getElementById('detail-edit-btn').onclick = () => {
+                    this.closeDetailModal();
+                    this.openPostModal(post);
+                };
+
+                document.getElementById('detail-modal').classList.remove('hidden');
+                lucide.createIcons();
+            }
+
+            closeDetailModal() {
+                document.getElementById('detail-modal').classList.add('hidden');
+            }
+
+            renderCalendar() {
+                const year = this.currentCalendarDate.getFullYear();
+                const month = this.currentCalendarDate.getMonth();
+
+                // Set Header
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                document.getElementById('calendar-month-year').innerText = `${monthNames[month]} ${year}`;
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                const grid = document.getElementById('calendar-days-grid');
+                grid.innerHTML = '';
+
+                // Previous month padding days
+                for (let i = 0; i < firstDay; i++) {
+                    grid.innerHTML += `<div class="h-20 sm:h-24 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/40 opacity-40"></div>`;
+                }
+
+                const todayStr = new Date().toISOString().split('T')[0];
+
+                // Month Days
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dayPosts = this.posts.filter(p => p.date === dateStr);
+                    const isToday = dateStr === todayStr;
+
+                    grid.innerHTML += `
+                        <div onclick="app.selectCalendarDay('${dateStr}')" class="h-20 sm:h-24 p-2 rounded-2xl border ${isToday ? 'border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/30' : 'border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900'} hover:border-indigo-400 transition-all flex flex-col justify-between cursor-pointer group">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold ${isToday ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900 w-5 h-5 flex items-center justify-center rounded-full' : 'text-slate-700 dark:text-slate-300'}">
+                                    ${day}
+                                </span>
+                                ${dayPosts.length > 0 ? `<span class="w-2 h-2 rounded-full bg-indigo-500"></span>` : ''}
+                            </div>
+
+                            <div class="space-y-1 overflow-hidden">
+                                ${dayPosts.slice(0, 2).map(p => `
+                                    <div class="text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded truncate">
+                                        ${p.title}
+                                    </div>
+                                `).join('')}
+                                ${dayPosts.length > 2 ? `<div class="text-[9px] text-slate-400 font-semibold">+${dayPosts.length - 2} more</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            changeMonth(delta) {
+                this.currentCalendarDate.setMonth(this.currentCalendarDate.getMonth() + delta);
+                this.renderCalendar();
+            }
+
+            goToTodayMonth() {
+                this.currentCalendarDate = new Date();
+                this.renderCalendar();
+            }
+
+            selectCalendarDay(dateStr) {
+                this.selectedCalendarDay = dateStr;
+                const section = document.getElementById('calendar-selected-day-section');
+                const title = document.getElementById('selected-day-date-title');
+                const container = document.getElementById('calendar-day-posts');
+
+                const formatted = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                });
+
+                title.innerText = formatted;
+                section.classList.remove('hidden');
+
+                const dayPosts = this.posts.filter(p => p.date === dateStr);
+                if (dayPosts.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-slate-400 col-span-2 py-4">No posts recorded on this day.</p>`;
+                } else {
+                    container.innerHTML = dayPosts.map(post => `
+                        <div onclick="app.openDetailModal('${post.id}')" class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/60 dark:border-slate-800 flex items-center justify-between cursor-pointer hover:border-indigo-500 transition-colors">
+                            <div>
+                                <p class="text-xs font-semibold text-indigo-500">${post.mood}</p>
+                                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">${post.title}</h4>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                        </div>
+                    `).join('');
+                }
+
+                lucide.createIcons();
+            }
+
+            renderInsights() {
+                // Total word count calculations
+                const totalWords = this.posts.reduce((sum, p) => sum + (p.content ? p.content.split(/\s+/).length : 0), 0);
+                const avgWords = this.posts.length > 0 ? Math.round(totalWords / this.posts.length) : 0;
+                
+                // Top mood
+                const moodCounts = {};
+                this.posts.forEach(p => {
+                    moodCounts[p.mood] = (moodCounts[p.mood] || 0) + 1;
+                });
+                let topMood = 'None';
+                let maxCount = 0;
+                Object.keys(moodCounts).forEach(m => {
+                    if (moodCounts[m] > maxCount) {
+                        maxCount = moodCounts[m];
+                        topMood = m;
+                    }
+                });
+
+                // Total Photos
+                const totalPhotos = this.posts.filter(p => p.image).length;
+
+                document.getElementById('stat-total-words').innerText = totalWords.toLocaleString();
+                document.getElementById('stat-avg-words').innerText = avgWords.toLocaleString();
+                document.getElementById('stat-top-mood').innerText = topMood;
+                document.getElementById('stat-total-photos').innerText = totalPhotos;
+
+                // Render Chart 1: Mood Chart
+                const moodCtx = document.getElementById('moodChart').getContext('2d');
+                if (this.moodChartInstance) this.moodChartInstance.destroy();
+
+                const moodsLabels = Object.keys(moodCounts);
+                const moodsData = Object.values(moodCounts);
+
+                this.moodChartInstance = new Chart(moodCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: moodsLabels.length > 0 ? moodsLabels : ['No Data'],
+                        datasets: [{
+                            data: moodsData.length > 0 ? moodsData : [1],
+                            backgroundColor: ['#6366f1', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#3b82f6'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                        }
+                    }
+                });
+
+                // Render Chart 2: Last 7 Days Activity
+                const activityCtx = document.getElementById('activityChart').getContext('2d');
+                if (this.activityChartInstance) this.activityChartInstance.destroy();
+
+                const last7Days = [];
+                const counts = [];
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    const dateStr = d.toISOString().split('T')[0];
+                    const label = d.toLocaleDateString('en-US', { weekday: 'short' });
+                    last7Days.push(label);
+                    counts.push(this.posts.filter(p => p.date === dateStr).length);
+                }
+
+                this.activityChartInstance = new Chart(activityCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: last7Days,
+                        datasets: [{
+                            label: 'Posts',
+                            data: counts,
+                            backgroundColor: '#6366f1',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+
+            toggleExportModal() {
+                document.getElementById('export-modal').classList.toggle('hidden');
+            }
+
+            exportData(type) {
+                if (type === 'json') {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.posts, null, 2));
+                    const downloadAnchor = document.createElement('a');
+                    downloadAnchor.setAttribute("href", dataStr);
+                    downloadAnchor.setAttribute("download", `anand_world_backup_${new Date().toISOString().split('T')[0]}.json`);
+                    document.body.appendChild(downloadAnchor);
+                    downloadAnchor.click();
+                    downloadAnchor.remove();
+                    this.showToast('JSON backup exported!');
+                } else if (type === 'md') {
+                    let md = `# Anand World Journal\n\n`;
+                    this.posts.forEach(p => {
+                        md += `## ${p.title}\n`;
+                        md += `**Date:** ${p.date} | **Mood:** ${p.mood}\n\n`;
+                        md += `${p.content}\n\n---\n\n`;
+                    });
+                    const dataStr = "data:text/markdown;charset=utf-8," + encodeURIComponent(md);
+                    const downloadAnchor = document.createElement('a');
+                    downloadAnchor.setAttribute("href", dataStr);
+                    downloadAnchor.setAttribute("download", `anand_world_journal_${new Date().toISOString().split('T')[0]}.md`);
+                    document.body.appendChild(downloadAnchor);
+                    downloadAnchor.click();
+                    downloadAnchor.remove();
+                    this.showToast('Markdown exported!');
+                }
+            }
+
+            importData(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (Array.isArray(imported)) {
+                            this.posts = imported;
+                            this.savePostsToStorage();
+                            this.render();
+                            this.toggleExportModal();
+                            this.showToast('Backup restored successfully!');
+                        }
+                    } catch (err) {
+                        this.showToast('Error reading backup JSON file.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            showToast(message) {
+                const toast = document.getElementById('toast');
+                document.getElementById('toast-message').innerText = message;
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            }
+        }
+
+        // Initialize application instance on DOM Ready
+        let app;
+        window.addEventListener('DOMContentLoaded', () => {
+            app = new AnandWorldApp();
+        });
+    </script>
+</body>
+</html>
